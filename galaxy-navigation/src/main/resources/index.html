@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <!-- import CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/element-ui/2.13.0/theme-chalk/index.css">
+    <style>
+        .el-row {
+            margin-bottom: 50px;
+        }
+
+        .el-row:last-child {
+            margin-bottom: 0;
+        }
+        #copyArea {
+            position: absolute;
+            width: 100%;
+            left: 40px;
+            top: 20px;
+        }
+        #copyText {
+            position: relative;
+            display: inline-block;
+        }
+        #copyBtn {
+            /*display: inline-block;*/
+            position: absolute;
+            bottom: 5px;
+            right: 1px;
+        }
+        /*html { overflow-x:hidden; }*/
+        .body {
+            overflow-x:hidden;
+            overflow-y:hidden;}
+
+    </style>
+</head>
+<body>
+<div id="app">
+<template>
+  <div class="container-fluid" style="background-color: #222;border-color: #080808;height: 110px">
+         <img style="max-width:380px; margin-top: 15px; margin-left: 10px; vertical-align: middle"
+                  src="/img.png"
+                  >
+  </div>
+    <div class="box">
+   <div style="padding: 0 20px">
+  <el-table
+    ref="singleTable"
+    :data="tableData1"
+    highlight-current-row
+    @current-change="handleCurrentChange"
+    style="width: 220px">
+<!--    align="center"-->
+    <el-table-column
+      property="name"
+      label="Access component name"
+      width="220px"
+    >
+    </el-table-column>
+  </el-table>
+  </div>
+  
+  <div style="padding: 0 20px">
+  <el-table
+    ref="singleTable"
+    :data="datat"
+    highlight-current-row
+    @row-click="handleCurrentChange1"
+    style="width: 500px">
+    <el-table-column
+      property="endpoint"
+      label="Access address"
+      width="500px">
+    </el-table-column>
+      <template slot="empty" style="height: 48px">
+<!--          <el-empty>No data</el-empty>-->
+          No data
+      </template>
+  </el-table>
+  </div>
+<div style="width:54%" v-show="conShow">
+    <h4 style="padding: 0 30px;margin: 5px">You need to configure the hosts file to add mapping information.</h4>
+        <el-row :gutter="15">
+            <el-col :offset="6" >
+                <div id="copyArea" >
+                    <el-input style="font-size: 18px;"
+                            id="copyText"
+                            type="textarea"
+                            :rows="15"
+                            placeholder="请输入要复制的内容"
+                            v-model="hostsaddress"
+                            >
+                    </el-input>
+                    <el-button round size="small" id="copyBtn" @click="clickCopyBtn(hostsaddress, $event)"
+                               data-clipboard-target="#copyText">Copy
+                    </el-button>
+                </div>
+            </el-col>
+        </el-row>
+
+<!--    v-for="hostsaddress in host"
+
+-->
+    </div>
+    </div>
+
+</template>
+
+
+</div>
+
+</body>
+  <!-- import Vue before Element -->
+  <script src="http://unpkg.com/vue@2/dist/vue.js"></script>
+  <!-- import JavaScript -->
+  <script src="http://unpkg.com/element-ui/lib/index.js"></script>
+  <script src="http://cdn.staticfile.org/axios/0.18.0/axios.min.js"></script>
+ <!-- import Vue before Element -->
+ <script src="https://cdn.bootcss.com/vue/2.6.11/vue.js"></script>
+<!-- import JavaScript -->
+ <script src="https://cdn.bootcss.com/element-ui/2.13.0/index.js"></script>
+ <script src="https://cdn.bootcss.com/clipboard.js/2.0.6/clipboard.js"></script>
+
+  <script>
+    new Vue({
+      el: '#app',
+      data: function() {
+        return { visible: false }
+      },
+
+       data() {
+      return {
+        tableData1: null,
+        currentRow: null,
+        options: null,
+        arangodb: null,
+        druid: null,
+        flink: null,
+        hadoop: null,
+        hbase: null,
+        kafka: null,
+        nacos: null,
+        spark: null,
+        xxl_job: null,
+        hostsaddress: null,
+        datat: null,
+        address: null,
+        ip:null,
+          host: null
+      }
+    },
+    methods: {
+        clickCopyBtn: function (text, event) {
+            debugger;
+            const btnId = '#' + event.currentTarget.id;
+            const clipboard = new ClipboardJS(btnId, {
+                text: () => text
+            });
+            // const clipboard = new ClipboardJS(event.target);
+
+            clipboard.on("success", e => {
+
+                this.$message({
+                    type: "success",
+                    message: "复制成功",
+                    duration: 300,
+                    showClose: true,
+                }); //这里你如果引入了elementui的提示就可以用，没有就注释即可
+
+                // 释放内存
+
+                clipboard.destroy();
+
+            });
+            clipboard.on("error", e => {
+
+                // 不支持复制
+
+                this.$message({
+                    type: "error",
+                    message: "复制失败",
+                    duration: 300,
+                    showClose: true,
+                });
+                clipboard.destroy();
+
+            });
+        },
+
+      setCurrent(row) {
+        this.$refs.singleTable.setCurrentRow(row);
+      },
+       handleCurrentChange(val) {
+           this.conShow = false;
+            debugger;
+
+         var test=val.name;
+         if ("ArangoDB"=== test){
+           this.datat=this.arangodb
+         }
+         if ("Apache Druid"=== test){
+           this.datat=this.druid
+         }
+         if ("Apache Flink"=== test){
+           this.datat=this.flink
+         }
+         if ("Apache Hadoop"=== test){
+           this.datat=this.hadoop
+         }
+         if ("Apache HBase"=== test){
+           this.datat=this.hbase
+         }
+         if ("Kafka-manager"=== test){
+           this.datat=this.kafka
+         }
+         if ("Nacos"=== test){
+           this.datat=this.nacos
+         }
+         if ("Apache Spark"=== test){
+           this.datat=this.spark
+         }
+         if ("Galaxy-job-service"=== test){
+           this.datat=this.xxl_job
+         }
+        this.currentRow = val;
+      },
+      handleCurrentChange1(val){
+
+        var test2=val.endpoint;
+        window.open("http://"+test2);
+      }
+    },
+      mounted () {
+          this.conShow = true;
+        var urlName= window.document.location.href;
+        axios.get(urlName+"component").then(response => {
+                  this.hbase = response.data.hbase;
+                  this.arangodb = response.data.arangodb;
+                  this.druid = response.data.druid;
+                  this.hadoop = response.data.hadoop;
+                  this.kafka = response.data.kafka;
+                  this.nacos = response.data.nacos;
+                  this.spark = response.data.spark;
+                  this.xxl_job = response.data.xxl_job;
+                  this.flink = response.data.flink;
+                  this.tableData1 = response.data.lists;
+                   let hostsaddress= response.data.hosts;
+                   debugger;
+            var arr=[];
+            hostsaddress.forEach(function (hostsa) {
+                //对象接受数据
+                debugger;
+                console.log(hostsa.url);
+                arr.push(hostsa.url)
+                console.log(arr);
+            })
+            debugger;
+            var b=arr.toString();
+            b=b.replace(/,/g,"\n")
+            console.log(b)
+            this.hostsaddress=b;
+        }).catch(function (error) {
+          console.log(error);
+        })
+      }
+
+    })
+  </script>
+
+
+  
+  
+  <style scoped>
+.headBox{
+  margin-top: 30px;
+  font-size: 40px;
+  color: red;
+}
+.box {
+  margin: 20px;
+  display: flex;
+/*  justify-content: space-around;*/
+
+}
+
+.container-fluid img {
+  /*设置图片垂直居中*/
+  vertical-align:middle;
+}
+
+</style>
+<style>
+
+    .prism-atom-one-dark pre code {
+        background-color: #282c34;
+        color: #abb2bf;
+    }
+
+  .text {
+    font-size: 14px;
+  }
+
+  .item {
+    padding: 18px 0;
+  }
+
+  .box-card {
+    width: 480px;
+  }
+
+
+
+</style>
+
+</html>
